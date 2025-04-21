@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0F172A;
+            color: #F8FAFC;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Subtle grain texture background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/%3E%3C/svg%3E');
+            z-index: -1;
+        }
+
+        header {
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, border-bottom 0.3s ease;
+        }
+
+        header.scrolled {
+            background-color: #1E1E2E;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid #2D2D44;
+        }
+
+        .header-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #F8FAFC;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: 0;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: #FF6F61;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover .logo-icon {
+            transform: rotate(360deg);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            margin-right: 0;
+        }
+
+        .nav-links a {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            color: #F8FAFC;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a.btn-primary {
+            background: linear-gradient(to right, #A78BFA, #FF6F61);
+        }
+
+        .nav-links a.btn-secondary {
+            background: linear-gradient(to right, #6EE7B7, #F9A8D4);
+        }
+
+        .nav-links a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(167, 139, 250, 0.4);
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #A78BFA, #FF6F61);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #94A3B8;
+            margin-bottom: 2.5rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0;
+            transform: translateY(30px);
+            font-weight: 300;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.2;
+        }
+
+        .grid-line {
+            position: absolute;
+            background-color: #A78BFA;
+            opacity: 0.3;
+        }
+
+        .vertical-line {
+            height: 100%;
+            width: 3px;
+        }
+
+        .horizontal-line {
+            width: 100%;
+            height: 3px;
+        }
+
+        .games-section {
+            padding: 8rem 2rem;
+            background-color: #1E1E2E;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 4rem;
+            color: #F8FAFC;
+            opacity: 0;
+            transform: translateY(30px);
+            font-weight: 600;
+        }
+
+        .games-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            justify-content: center;
+        }
+
+        .game-card {
+            background-color: #2D2D44;
+            border-radius: 16px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #3C3C5C;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(167, 139, 250, 0.3);
+        }
+
+        .game-preview {
+            position: relative;
+            height: 280px;
+            background-color: #1E1E2E;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .preview-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 180px;
+            transform: scale(1);
+            transition: transform 0.3s ease;
+        }
+
+        .game-card:hover .preview-board {
+            transform: scale(1.1);
+        }
+
+        .preview-cell {
+            aspect-ratio: 1/1;
+            background-color: #3C3C5C;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 1px solid #4B4B6B;
+            transition: background-color 0.3s ease;
+        }
+
+        .preview-cell.x {
+            color: #FF6F61;
+        }
+
+        .preview-cell.o {
+            color: #F9A8D4;
+        }
+
+        .game-info {
+            padding: 1.5rem;
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #F8FAFC;
+            font-weight: 500;
+        }
+
+        .game-description {
+            color: #94A3B8;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            display: inline-block;
+            text-decoration: none;
+            background: linear-gradient(to right, #A78BFA, #FF6F61);
+            color: #F8FAFC;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #FF6F61, #A78BFA);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            left: 0;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(167, 139, 250, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(to right, #6EE7B7, #F9A8D4);
+        }
+
+        .features-section {
+            padding: 8rem 2rem;
+            background: linear-gradient(to bottom, #1E1E2E, #0F172A);
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6rem;
+            gap: 3rem;
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+        .feature:nth-child(even) {
+            flex-direction: row-reverse;
+            transform: translateX(30px);
+        }
+
+        .feature-image {
+            flex: 1;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid #3C3C5C;
+            background-color: #1E1E2E;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .feature:hover .feature-image {
+            transform: scale(1.05);
+        }
+
+        .feature-info {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #F8FAFC;
+            font-weight: 500;
+        }
+
+        .feature-description {
+            color: #94A3B8;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+
+        .cta-section {
+            padding: 8rem 2rem;
+            text-align: center;
+            background-color: #0F172A;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #F8FAFC;
+            opacity: 0;
+            transform: translateY(30px);
+            font-weight: 600;
+        }
+
+        .cta-subtitle {
+            color: #94A3B8;
+            margin-bottom: 2.5rem;
+            font-size: 1.25rem;
+            opacity: 0;
+            transform: translateY(20px);
+            font-weight: 300;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 30%;
+            opacity: 0.15;
+        }
+
+        .shape-1 {
+            width: 180px;
+            height: 180px;
+            background-color: #A78BFA;
+            top: 15%;
+            left: 10%;
+        }
+
+        .shape-2 {
+            width: 220px;
+            height: 220px;
+            background-color: #FF6F61;
+            bottom: 15%;
+            right: 10%;
+        }
+
+        .shape-3 {
+            width: 120px;
+            height: 120px;
+            background-color: #6EE7B7;
+            top: 50%;
+            right: 25%;
+        }
+
+        footer {
+            background-color: #1E1E2E;
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid #2D2D44;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-text {
+            color: #94A3B8;
+            font-size: 0.875rem;
+            font-weight: 300;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.25rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .feature {
+                flex-direction: column !important;
+                gap: 2rem;
+                transform: translateX(0) !important;
+            }
+
+            .feature-image, .feature-info {
+                width: 100%;
+            }
+
+            .preview-board {
+                width: 150px;
+            }
+
+            .game-card {
+                max-width: 90%;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-end;
+            }
+
+            .nav-links a {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Custom Symbol Styles */
+        .x-symbol {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .x-symbol:before,
+        .x-symbol:after {
+            content: '';
+            position: absolute;
+            width: 80%;
+            height: 8px;
+            background-color: #FF6F61;
+            border-radius: 4px;
+            transition: transform 0.3s ease;
+        }
+
+        .x-symbol:before {
+            transform: rotate(45deg);
+        }
+
+        .x-symbol:after {
+            transform: rotate(-45deg);
+        }
+
+        .feature:hover .x-symbol:before {
+            transform: rotate(55deg);
+        }
+
+        .feature:hover .x-symbol:after {
+            transform: rotate(-55deg);
+        }
+
+        .o-symbol {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .o-symbol:before {
+            content: '';
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            border: 8px solid #F9A8D4;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .feature:hover .o-symbol:before {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-icon">◎✕</span>
+                <span>Tic Tac Toe</span>
+            </div>
+            <div class="nav-links">
+                <a href="basic_tic_tac_toe.html" class="btn btn-primary">Classic Tic Tac Toe</a>
+                <a href="advanced_tic_tac_toe.html" class="btn btn-secondary">Advanced Tic Tac Toe</a>
+                <a href="mathematical_analysis.html" class="btn btn-primary">Mathematical Analysis</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-bg">
+            <div class="grid-line vertical-line" style="left: 33%"></div>
+            <div class="grid-line vertical-line" style="right: 33%"></div>
+            <div class="grid-line horizontal-line" style="top: 33%"></div>
+            <div class="grid-line horizontal-line" style="bottom: 33%"></div>
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title">Master the Grid</h1>
+            <p class="hero-subtitle">Explore two sophisticated Tic Tac Toe variants, each powered by an advanced AI leveraging the minimax algorithm. Test your strategic prowess today.</p>
+            <div class="cta-buttons">
+                <a href="#games" class="btn btn-primary">Explore Games</a>
+                <a href="#features" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="games" class="games-section">
+        <h2 class="section-title">Select Your Game</h2>
+        <div class="games-container">
+            <div class="game-card">
+                <div class="game-preview">
+                    <div class="preview-board">
+                        <div class="preview-cell x">X</div>
+                        <div class="preview-cell"></div>
+                        <div class="preview-cell o">O</div>
+                        <div class="preview-cell"></div>
+                        <div class="preview-cell x">X</div>
+                        <div class="preview-cell"></div>
+                        <div class="preview-cell o">O</div>
+                        <div class="preview-cell"></div>
+                        <div class="preview-cell x">X</div>
+                    </div>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Classic Tic Tac Toe</h3>
+                    <p class="game-description">The traditional 3x3 grid game where the objective is to align three symbols in a row, column, or diagonal. Compete against an optimized AI opponent.</p>
+                    <a href="tic_tac_toe.html" class="btn btn-primary">Play Now</a>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="game-preview">
+                    <div class="preview-board">
+                        <div class="preview-cell x" style="opacity: 0.5">X</div>
+                        <div class="preview-cell o">O</div>
+                        <div class="preview-cell x">X</div>
+                        <div class="preview-cell"></div>
+                        <div class="preview-cell x">X</div>
+                        <div class="preview-cell"></div>
+                        <div class="preview-cell o">O</div>
+                        <div class="preview-cell o">O</div>
+                        <div class="preview-cell"></div>
+                    </div>
+                </div>
+                <div class="game-info">
+                    <h3 class="game-title">Advanced Tic Tac Toe</h3>
+                    <p class="game-description">An innovative variant limiting each player to three pieces on the board. Placing a fourth piece removes the oldest, introducing dynamic strategic challenges.</p>
+                    <a href="tic_tac_toe_2.html" class="btn btn-primary">Play Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features-section">
+        <div class="features-container">
+            <div class="feature">
+                <div class="feature-image">
+                    <div class="x-symbol"></div>
+                </div>
+                <div class="feature-info">
+                    <h3 class="feature-title">Advanced AI</h3>
+                    <p class="feature-description">Powered by the minimax algorithm, the AI evaluates all possible game states to deliver optimal moves, providing a formidable challenge.</p>
+                </div>
+            </div>
+
+            <div class="feature">
+                <div class="feature-image">
+                    <div class="o-symbol"></div>
+                </div>
+                <div class="feature-info">
+                    <h3 class="feature-title">Elegant Design</h3>
+                    <p class="feature-description">A modern, responsive interface with fluid animations ensures an intuitive and visually appealing experience across all devices.</p>
+                </div>
+            </div>
+
+            <div class="feature">
+                <div class="feature-image">
+                    <div class="preview-board" style="rotate: 10deg">
+                        <div class="preview-cell" style="opacity: 0.5">X</div>
+                        <div class="preview-cell"></div>
+                        <div class="preview-cell">O</div>
+                        <div class="preview-cell"></div>
+                        <div class="preview-cell">X</div>
+                        <div class="preview-cell"></div>
+                        <div class="preview-cell">O</div>
+                        <div class="preview-cell">X</div>
+                        <div class="preview-cell"></div>
+                    </div>
+                </div>
+                <div class="feature-info">
+                    <h3 class="feature-title">Innovative Gameplay</h3>
+                    <p class="feature-description">Choose between the classic game or an advanced variant with a three-piece limit, each offering unique strategic depth.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+            </div>
+            <div class="cta-container">
+                <h2 class="cta-title">Challenge the AI</h2>
+                <p class="cta-subtitle">Engage with our intelligent AI and refine your strategic skills. Select a game and begin your journey.</p>
+                <div class="cta-buttons">
+                    <a href="tic_tac_toe.html" class="btn btn-primary">Classic Game</a>
+                    <a href="tic_tac_toe_2.html" class="btn btn-secondary">Advanced Game</a>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-content">
+                <p class="footer-text">Developed by Abhinav</p>
+            </div>
+        </footer>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                gsap.registerPlugin(ScrollTrigger);
+
+                // Header scroll behavior
+                const header = document.querySelector('header');
+                const heroSection = document.querySelector('.hero');
+                
+                ScrollTrigger.create({
+                    trigger: heroSection,
+                    start: 'top top',
+                    end: 'bottom top',
+                    onLeave: () => header.classList.add('scrolled'),
+                    onEnterBack: () => header.classList.remove('scrolled')
+                });
+
+                // Hero animations
+                const heroTl = gsap.timeline();
+                heroTl.to('.hero-title', {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: 'power4.out'
+                })
+                .to('.hero-subtitle', {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: 'power4.out'
+                }, '-=0.8')
+                .to('.cta-buttons', {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: 'power4.out',
+                    stagger: 0.2
+                }, '-=0.8');
+
+                // Grid line animations with bounce
+                gsap.fromTo('.vertical-line', 
+                    { scaleY: 0, transformOrigin: 'center' },
+                    { 
+                        scaleY: 1, 
+                        duration: 1.5, 
+                        ease: 'bounce.out',
+                        stagger: 0.3
+                    }
+                );
+                
+                gsap.fromTo('.horizontal-line', 
+                    { scaleX: 0, transformOrigin: 'center' },
+                    { 
+                        scaleX: 1, 
+                        duration: 1.5, 
+                        ease: 'bounce.out',
+                        stagger: 0.3
+                    }
+                );
+
+                // Section title animations
+                gsap.to('.section-title', {
+                    scrollTrigger: {
+                        trigger: '.section-title',
+                        start: 'top 80%'
+                    },
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: 'power4.out'
+                });
+
+                // Game card animations with rotation
+                gsap.to('.game-card', {
+                    scrollTrigger: {
+                        trigger: '.games-container',
+                        start: 'top 70%'
+                    },
+                    opacity: 1,
+                    y: 0,
+                    rotation: 0,
+                    duration: 1,
+                    stagger: 0.4,
+                    ease: 'power4.out'
+                });
+
+                // Feature animations with scale
+                gsap.utils.toArray('.feature').forEach((feature, i) => {
+                    gsap.to(feature, {
+                        scrollTrigger: {
+                            trigger: feature,
+                            start: 'top 80%'
+                        },
+                        opacity: 1,
+                        x: 0,
+                        scale: 1,
+                        duration: 1,
+                        ease: 'power4.out'
+                    });
+                });
+
+                // CTA section animations
+                const ctaTl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: '.cta-section',
+                        start: 'top 70%'
+                    }
+                });
+                
+                ctaTl.to('.cta-title', {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: 'power4.out'
+                })
+                .to('.cta-subtitle', {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: 'power4.out'
+                }, '-=0.8')
+                .to('.cta-buttons', {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: 'power4.out',
+                    stagger: 0.2
+                }, '-=0.8');
+
+                // Floating shapes with more dynamic movement
+                gsap.to('.shape-1', {
+                    y: '-=50',
+                    x: '+=30',
+                    rotation: 360,
+                    duration: 7,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: 'sine.inOut'
+                });
+                
+                gsap.to('.shape-2', {
+                    y: '+=60',
+                    x: '-=40',
+                    rotation: -360,
+                    duration: 9,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: 'sine.inOut'
+                });
+                
+                gsap.to('.shape-3', {
+                    y: '-=70',
+                    x: '+=20',
+                    rotation: 180,
+                    duration: 8,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: 'sine.inOut'
+                });
+
+                // Smooth scrolling for anchor links
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const targetId = this.getAttribute('href');
+                        const targetElement = document.querySelector(targetId);
+                        if (targetElement) {
+                            window.scrollTo({
+                                top: targetElement.offsetTop - 80,
+                                behavior: 'smooth'
+                            });
+                        }
+                    });
+                });
+
+                // Button micro-interactions
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.addEventListener('mouseenter', () => {
+                        gsap.to(btn, {
+                            scale: 1.05,
+                            duration: 0.3,
+                            ease: 'power2.out'
+                        });
+                    });
+                    btn.addEventListener('mouseleave', () => {
+                        gsap.to(btn, {
+                            scale: 1,
+                            duration: 0.3,
+                            ease: 'power2.out'
+                        });
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

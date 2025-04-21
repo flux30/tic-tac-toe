@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathematical Analysis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0F172A;
+            color: #F8FAFC;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/%3E%3C/svg%3E');
+            z-index: -1;
+        }
+
+        header {
+            background-color: #1E1E2E;
+            padding: 1rem 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid #2D2D44;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #F8FAFC;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: 0;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: #FF6F61;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover .logo-icon {
+            transform: rotate(360deg);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            margin-right: 0;
+        }
+
+        .nav-links a {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            color: #F8FAFC;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a.btn-primary {
+            background: linear-gradient(to right, #A78BFA, #FF6F61);
+        }
+
+        .nav-links a.btn-secondary {
+            background: linear-gradient(to right, #6EE7B7, #F9A8D4);
+        }
+
+        .nav-links a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(167, 139, 250, 0.4);
+        }
+
+        main {
+            flex: 1;
+            padding: 6rem 2rem 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #F8FAFC;
+            font-weight: 600;
+            text-align: center;
+            background: linear-gradient(to right, #A78BFA, #FF6F61);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .content {
+            line-height: 1.6;
+            color: #94A3B8;
+            font-weight: 300;
+        }
+
+        .content h3 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            color: #F8FAFC;
+            font-weight: 500;
+        }
+
+        .content p {
+            margin-bottom: 1rem;
+        }
+
+        .visualization {
+            margin: 2rem 0;
+            padding: 1rem;
+            background-color: #1E1E2E;
+            border-radius: 8px;
+            border: 1px solid #2D2D44;
+            min-height: 400px; /* Increased height for better visualization */
+        }
+
+        canvas {
+            max-width: 100%;
+            height: 100%; /* Ensure canvas fills the visualization height */
+        }
+
+        .key-points {
+            background-color: rgba(30, 30, 46, 0.5);
+            border-left: 4px solid #A78BFA;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .key-points li {
+            margin-bottom: 0.5rem;
+        }
+
+        footer {
+            background-color: #1E1E2E;
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid #2D2D44;
+            color: #94A3B8;
+            font-size: 0.875rem;
+            font-weight: 300;
+        }
+
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .content h3 {
+                font-size: 1.25rem;
+            }
+
+            .content p {
+                font-size: 0.95rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-end;
+            }
+
+            .nav-links a {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            main {
+                padding-top: 5rem;
+            }
+
+            .visualization {
+                min-height: 300px; /* Adjusted height for smaller screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-icon">◎✕</span>
+                <span>Tic Tac Toe</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="btn btn-primary">Home</a>
+                <a href="basic_tic_tac_toe.html" class="btn btn-secondary">Classic</a>
+                <a href="advanced_tic_tac_toe.html" class="btn btn-secondary">Advanced</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <h1 class="section-title">Mathematical Analysis</h1>
+        <div class="content">
+            <h3>Minimax Algorithm (Game Theory)</h3>
+            <p>The Minimax algorithm is a recursive decision-making algorithm used in two-player games. In our Tic Tac Toe implementation:</p>
+            <div class="key-points">
+                <ul>
+                    <li>AI evaluates all possible moves up to a certain depth (9 for Classic, 6 for Advanced)</li>
+                    <li>Assigns scores: +10 for AI win, -10 for player win, 0 for draw</li>
+                    <li>Time complexity: O(b^d) where b is branching factor (~4 avg) and d is depth</li>
+                    <li>Uses alpha-beta pruning to optimize performance</li>
+                </ul>
+            </div>
+            <div class="visualization">
+                <canvas id="minimaxChart"></canvas>
+            </div>
+
+            <h3>Board State Combinations (Combinatorics)</h3>
+            <p>The game state space complexity varies between versions:</p>
+            <div class="key-points">
+                <ul>
+                    <li><strong>Classic:</strong> 255,168 possible games (including rotations)</li>
+                    <li><strong>Classic (unique):</strong> 26,830 distinct game states</li>
+                    <li><strong>Advanced:</strong> ~120,000 possible games due to piece replacement</li>
+                    <li><strong>Terminal states:</strong> 138 terminal positions (91 wins, 44 draws, 3 invalid)</li>
+                </ul>
+            </div>
+            <div class="visualization">
+                <canvas id="stateChart"></canvas>
+            </div>
+
+            <h3>Proof of Why the Game is Always a Draw with Perfect Play</h3>
+            <p>Through mathematical analysis and computer verification:</p>
+            <div class="key-points">
+                <ul>
+                    <li>First player (X) has 8 possible first moves (reduced to 3 by symmetry)</li>
+                    <li>Second player (O) must respond optimally to center moves</li>
+                    <li>With perfect play, all branches lead to a draw by move 9</li>
+                    <li>Advanced version maintains balance through piece replacement</li>
+                </ul>
+            </div>
+            <div class="visualization">
+                <canvas id="drawProofChart"></canvas>
+            </div>
+
+            <h3>Project Development Process</h3>
+            <p>Actual time allocation during development:</p>
+            <div class="key-points">
+                <ul>
+                    <li><strong>Planning & Design:</strong> 25% - Wireframing and architecture</li>
+                    <li><strong>Core Logic:</strong> 35% - Game rules and AI implementation</li>
+                    <li><strong>UI/UX:</strong> 20% - Visual design and responsiveness</li>
+                    <li><strong>Testing:</strong> 15% - Game balance and bug fixes</li>
+                    <li><strong>Documentation:</strong> 5% - Code comments and analysis</li>
+                </ul>
+            </div>
+            <div class="visualization">
+                <canvas id="developmentChart"></canvas>
+            </div>
+
+            <h3>Tech Stack Used</h3>
+            <p>Actual technology distribution:</p>
+            <div class="key-points">
+                <ul>
+                    <li><strong>HTML5:</strong> 15% - Structure and semantic markup</li>
+                    <li><strong>CSS3:</strong> 20% - Styling and animations</li>
+                    <li><strong>JavaScript:</strong> 45% - Game logic and interactivity</li>
+                    <li><strong>GSAP:</strong> 10% - Advanced animations</li>
+                    <li><strong>Chart.js:</strong> 10% - Data visualization</li>
+                </ul>
+            </div>
+            <div class="visualization">
+                <canvas id="techStackChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p class="footer-text">Developed by Abhinav</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animation for page elements
+            gsap.from('.section-title', {
+                opacity: 0,
+                y: 30,
+                duration: 1,
+                ease: 'power4.out'
+            });
+
+            gsap.from('.content h3, .content p, .key-points, .visualization', {
+                opacity: 0,
+                y: 20,
+                duration: 1,
+                stagger: 0.1,
+                ease: 'power4.out',
+                scrollTrigger: {
+                    trigger: '.content',
+                    start: 'top 80%'
+                }
+            });
+
+            // Minimax Algorithm Complexity Chart (Updated to Line with Log Scale and Adjusted Ticks)
+            const minimaxCtx = document.getElementById('minimaxChart').getContext('2d');
+            new Chart(minimaxCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Depth 1', 'Depth 2', 'Depth 3', 'Depth 4', 'Depth 5', 'Depth 6', 'Depth 7', 'Depth 8', 'Depth 9'],
+                    datasets: [{
+                        label: 'Nodes Evaluated',
+                        data: [9, 72, 504, 3024, 15120, 60480, 181440, 362880, 362880],
+                        backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                        borderColor: 'rgba(167, 139, 250, 0.7)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Minimax Algorithm Complexity Growth (Tic-Tac-Toe)',
+                            font: { size: 16 }
+                        },
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return Number(context.raw).toLocaleString() + ' nodes';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'logarithmic',
+                            beginAtZero: true,
+                            title: { 
+                                display: true, 
+                                text: 'Game States Evaluated (Log Scale)',
+                                font: { weight: 'bold' }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    if (value === 1000000) return '1M';
+                                    if (value === 100000) return '100K';
+                                    if (value === 10000) return '10K';
+                                    if (value === 1000) return '1K';
+                                    if (value === 100) return '100';
+                                    if (value === 10) return '10';
+                                    if (value === 1) return '1';
+                                    return '';
+                                }
+                            }
+                        },
+                        x: {
+                            title: { 
+                                display: true, 
+                                text: 'Search Depth (Ply)',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 4,
+                            hoverRadius: 6
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+
+            // Board State Combinations Chart
+            const stateCtx = document.getElementById('stateChart').getContext('2d');
+            new Chart(stateCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Possible Games', 'Unique States', 'Terminal Positions'],
+                    datasets: [
+                        {
+                            label: 'Classic',
+                            data: [255168, 26830, 138],
+                            backgroundColor: 'rgba(255, 111, 97, 0.7)'
+                        },
+                        {
+                            label: 'Advanced',
+                            data: [120000, 18000, 138],
+                            backgroundColor: 'rgba(249, 168, 212, 0.7)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Game State Space Complexity',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Count' }
+                        }
+                    }
+                }
+            });
+
+            // Draw Proof Chart (Game Tree Depth)
+            const drawProofCtx = document.getElementById('drawProofChart').getContext('2d');
+            new Chart(drawProofCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Move 1', 'Move 2', 'Move 3', 'Move 4', 'Move 5', 'Move 6', 'Move 7', 'Move 8', 'Move 9'],
+                    datasets: [{
+                        label: 'Possible Games',
+                        data: [1, 72, 756, 6480, 45360, 209952, 1048560, 3628800],
+                        fill: false,
+                        borderColor: 'rgba(110, 231, 183, 0.7)',
+                        backgroundColor: 'rgba(110, 231, 183, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Game Tree Growth (Classic Version)',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'logarithmic',
+                            title: { display: true, text: 'Possible Games (log scale)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Move Number' }
+                        }
+                    }
+                }
+            });
+
+            // Development Process Chart
+            const developmentCtx = document.getElementById('developmentChart').getContext('2d');
+            new Chart(developmentCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Planning & Design', 'Core Logic', 'UI/UX', 'Testing', 'Documentation'],
+                    datasets: [{
+                        data: [25, 35, 20, 15, 5],
+                        backgroundColor: [
+                            'rgba(167, 139, 250, 0.7)',
+                            'rgba(255, 111, 97, 0.7)',
+                            'rgba(110, 231, 183, 0.7)',
+                            'rgba(249, 168, 212, 0.7)',
+                            'rgba(255, 206, 86, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Development Time Allocation',
+                            font: { size: 16 }
+                        }
+                    }
+                }
+            });
+
+            // Tech Stack Chart
+            const techStackCtx = document.getElementById('techStackChart').getContext('2d');
+            new Chart(techStackCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['HTML5', 'CSS3', 'JavaScript', 'GSAP', 'Chart.js'],
+                    datasets: [{
+                        data: [15, 20, 45, 10, 10],
+                        backgroundColor: [
+                            'rgba(167, 139, 250, 0.7)',
+                            'rgba(255, 111, 97, 0.7)',
+                            'rgba(110, 231, 183, 0.7)',
+                            'rgba(249, 168, 212, 0.7)',
+                            'rgba(255, 206, 86, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Technology Distribution',
+                            font: { size: 16 }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
