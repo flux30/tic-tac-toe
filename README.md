@@ -1,6 +1,6 @@
-![image](https://github.com/user-attachments/assets/f41c107c-d524-4640-884e-15c46a295870)# Advanced Tic Tac Toe
+# Advanced Tic Tac Toe
 
-![Tic Tac Toe Game]![image](https://github.com/user-attachments/assets/d4b98503-0295-465f-a714-3d46a035659d)
+![Tic Tac Toe Game](https://github.com/user-attachments/assets/d4b98503-0295-465f-a714-3d46a035659d)
 
 
 ## 🎮 [Live Demo](https://tic-tac-toe-flux30s-projects.vercel.app/)
