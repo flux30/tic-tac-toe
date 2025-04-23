@@ -1,4 +1,4 @@
-# Advanced Tic Tac Toe
+# Tic Tac Toe
 
 ![Tic Tac Toe Game](https://github.com/user-attachments/assets/d4b98503-0295-465f-a714-3d46a035659d)
 
